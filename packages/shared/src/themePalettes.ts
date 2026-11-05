@@ -1,4 +1,11 @@
-export const BUILT_IN_THEME_IDS = ["t3-chat", "grove", "ocean", "ember", "iris"] as const;
+export const BUILT_IN_THEME_IDS = [
+  "t3-chat",
+  "grove",
+  "ocean",
+  "ember",
+  "iris",
+  "liquid-glass",
+] as const;
 
 export const MOBILE_DEFAULT_THEME_ID = "t3-code";
 
@@ -908,12 +915,86 @@ export const IRIS_THEME: ThemeDefinition = {
   sidebarArtwork: true,
 };
 
+export const LIQUID_GLASS_THEME: ThemeDefinition = {
+  id: "liquid-glass",
+  label: "Liquid Glass",
+  appearance: "light",
+  colors: {
+    ...T3_CODE_LIGHT_THEME_COLORS,
+    canvas: "#f5f7fa",
+    chrome: "#edf2f8",
+    toolbar: "#edf2f8",
+    toolbarBorder: "#c5d0df",
+    text: "#202733",
+    textMuted: "#596577",
+    accent: "#0067d9",
+    focus: "#0067d9",
+    accentSurface: "#dfecff",
+    accentSurfaceForeground: "#06488f",
+    sidebar: "#e7eef7",
+    sidebarForeground: "#202733",
+    sidebarMutedForeground: "#536174",
+    sidebarControlSurface: "#dce7f5",
+    sidebarRowHover: "#dbe7f5",
+    sidebarRowActive: "#cbdffc",
+    sidebarRowSelected: "#cbdffc",
+    sidebarBorder: "#c5d0df",
+    messageSurface: "#e7edf5",
+    messageForeground: "#202733",
+    messageAction: "#0067d9",
+    messageActionHover: "#0059bd",
+    surfaceRaised: "#f5f8fc",
+    codeBackground: "#ffffff",
+  },
+  variants: {
+    dark: {
+      ...T3_CODE_DARK_THEME_COLORS,
+      canvas: "#171d27",
+      chrome: "#141c29",
+      toolbar: "#141c29",
+      toolbarForeground: "#f0f4fa",
+      toolbarBorder: "#354459",
+      toolbarControl: "#28364b",
+      toolbarControlForeground: "#f0f4fa",
+      toolbarControlHover: "#35465f",
+      text: "#f0f4fa",
+      textMuted: "#a5b2c5",
+      accent: "#69b4ff",
+      accentForeground: "#081b30",
+      focus: "#69b4ff",
+      accentSurface: "#253d5a",
+      accentSurfaceForeground: "#cde5ff",
+      sidebar: "#1c2a40",
+      sidebarForeground: "#f0f4fa",
+      sidebarMutedForeground: "#a5b2c5",
+      sidebarControlSurface: "#293d58",
+      sidebarRowHover: "#2a3e59",
+      sidebarRowActive: "#314f73",
+      sidebarRowSelected: "#314f73",
+      sidebarBorder: "#354459",
+      surface: "#1d2633",
+      surfaceRaised: "#243044",
+      surfaceOverlay: "#243044",
+      messageSurface: "#26354a",
+      messageForeground: "#f0f4fa",
+      messageAction: "#69b4ff",
+      messageActionForeground: "#081b30",
+      messageActionHover: "#8bc5ff",
+      codeBackground: "#131a24",
+      codeForeground: "#e4edf9",
+      terminalBackground: "#131a24",
+      terminalForeground: "#e4edf9",
+    },
+  },
+};
+
 export const BUILT_IN_THEMES: ReadonlyArray<ThemeDefinition> = [
   T3_CHAT_THEME,
   GROVE_THEME,
   OCEAN_THEME,
   EMBER_THEME,
   IRIS_THEME,
+  LIQUID_GLASS_THEME,
 ];
 
 export function getThemeColorsForAppearance(

@@ -1,6 +1,9 @@
 /* Clerk injects its component styles into the clerk layer (clerkAppearance.cssLayerName). */
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
+@import "./liquidGlass.css";
+
+@custom-variant liquid-glass (&:where([data-theme-id="liquid-glass"], [data-theme-id="liquid-glass"] *));
 
 @custom-variant dark (&:is(.dark, .dark *));
 @custom-variant light (&:not(.dark, .dark *));
@@ -369,6 +372,9 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: var(--background) !important;
   }
+  @variant liquid-glass {
+    @apply liquid-material;
+  }
 }
 
 @utility alert-glass {
@@ -439,6 +445,9 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: var(--popover) !important;
   }
+  @variant liquid-glass {
+    @apply liquid-material;
+  }
 }
 
 @utility dialog-backdrop {
@@ -463,6 +472,9 @@ html[data-mobile-composer-route-transition="true"]::view-transition-old(t3-mobil
 
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     background: var(--popover) !important;
+  }
+  @variant liquid-glass {
+    @apply liquid-material;
   }
 }
 

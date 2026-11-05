@@ -12,6 +12,7 @@ import {
   EMBER_THEME,
   GROVE_THEME,
   IRIS_THEME,
+  LIQUID_GLASS_THEME,
   OCEAN_THEME,
   THEME_APPEARANCE_MODE_STORAGE_KEY,
   THEME_FOLLOW_SYSTEM_STORAGE_KEY,
@@ -152,6 +153,11 @@ describe("index.html boot script", () => {
     prefersDark: boolean;
   }> = [
     { name: "no stored preference on a dark OS", storage: {}, prefersDark: true },
+    ...[false, true].map((prefersDark) => ({
+      name: `Liquid Glass follows ${prefersDark ? "dark" : "light"} system appearance`,
+      storage: { [THEME_STORAGE_KEY]: "liquid-glass", [THEME_FOLLOW_SYSTEM_STORAGE_KEY]: "true" },
+      prefersDark,
+    })),
     {
       name: "T3 Chat follows a dark OS",
       storage: { [THEME_STORAGE_KEY]: "t3-chat", [THEME_FOLLOW_SYSTEM_STORAGE_KEY]: "true" },
@@ -284,7 +290,14 @@ describe("index.html boot script", () => {
   });
 
   it("keeps every built-in boot splash in sync with the real palettes", () => {
-    for (const theme of [T3_CHAT_THEME, GROVE_THEME, OCEAN_THEME, EMBER_THEME, IRIS_THEME]) {
+    for (const theme of [
+      T3_CHAT_THEME,
+      GROVE_THEME,
+      OCEAN_THEME,
+      EMBER_THEME,
+      IRIS_THEME,
+      LIQUID_GLASS_THEME,
+    ]) {
       expect(theme.appearance).toBe("light");
       for (const mode of ["light", "dark"] as const) {
         const colors = getThemeColorsForMode(theme, mode);

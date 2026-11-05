@@ -51,6 +51,20 @@
         // Keep this small boot-time copy in sync with the built-in palettes so
         // the selected theme is visible before the app has mounted.
         const BUILT_IN_THEME_PALETTES = {
+          "liquid-glass": {
+            light: {
+              background: "#f5f7fa",
+              foreground: "#202733",
+              accent: "#0067d9",
+              chrome: "#edf2f8",
+            },
+            dark: {
+              background: "#171d27",
+              foreground: "#f0f4fa",
+              accent: "#69b4ff",
+              chrome: "#141c29",
+            },
+          },
           "t3-chat": {
             light: {
               background: "oklch(0.982446 0.010114 325.653)",
@@ -137,6 +151,7 @@
           "ocean",
           "ember",
           "iris",
+          "liquid-glass",
           "t3-chat-dark",
           "t3-grove",
           "t3-ocean",
@@ -671,6 +686,44 @@
     <title>T3 Code (Beta)</title>
   </head>
   <body>
+    <!-- Chromium can refract the live backdrop; other engines keep the CSS material. -->
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="0"
+      height="0"
+      aria-hidden="true"
+      focusable="false"
+      style="position: absolute; pointer-events: none"
+    >
+      <defs>
+        <filter
+          id="t3-liquid-glass-lens"
+          x="0%"
+          y="0%"
+          width="100%"
+          height="100%"
+          color-interpolation-filters="sRGB"
+        >
+          <feImage
+            href="data:image/png;base64,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"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+            preserveAspectRatio="none"
+            result="rim"
+          />
+          <feDisplacementMap
+            in="SourceGraphic"
+            in2="rim"
+            scale="10"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </defs>
+    </svg>
+
     <div id="root">
       <div id="boot-shell">
         <div id="boot-shell-card" aria-label="T3 Code splash screen">
