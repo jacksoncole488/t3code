@@ -7,6 +7,7 @@ import {
 } from "@t3tools/contracts";
 import { createContext, memo, type ReactNode, useRef, useState } from "react";
 import { Badge } from "../ui/badge";
+import { LiquidGlassLens } from "../LiquidGlassLens";
 import { Popover, PopoverPopup, PopoverTrigger } from "../ui/popover";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { cn } from "~/lib/utils";
@@ -336,6 +337,7 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
           />
         }
       >
+        <LiquidGlassLens radius={9999} blur={0.7} />
         <span
           className={cn("flex min-w-0 flex-1 items-center", size === "xs" ? "gap-1" : "gap-1.5")}
         >
@@ -404,6 +406,8 @@ export const ProviderModelPicker = memo(function ProviderModelPicker(props: {
         </span>
       </PopoverTrigger>
       <PopoverPopup
+        variant="glass"
+        data-model-picker-popup="true"
         {...(props.isComposerOwned ? composerFloatingLayerProps : {})}
         ref={(popup) => {
           popupRef.current = popup;

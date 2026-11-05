@@ -2,92 +2,132 @@ import { useEffect, useId, useRef } from "react";
 
 import { useTheme } from "~/hooks/useTheme";
 import { observeResize } from "~/lib/observeResize";
+import { liquidGlassDisplacement, liquidGlassGeometry } from "~/liquidGlassOptics";
 import { resolveThemeHalf } from "~/themePalette";
 
 const lensMaps = new Map<string, string>();
 
-function createLensMap(width: number, height: number, radius: number): string {
-  const key = `${width}:${height}:${radius}`;
+function createLensMap(width: number, height: number, radius: number, density: number) {
+  const key = `${width}:${height}:${radius}:${density}`;
   const cached = lensMaps.get(key);
   if (cached) return cached;
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
+  canvas.width = Math.ceil(width * density);
+  canvas.height = Math.ceil(height * density);
   const context = canvas.getContext("2d");
   if (!context) return "";
 
-  const pixels = context.createImageData(width, height);
-  const corner = Math.min(radius, width / 2, height / 2);
-  const bevel = Math.min(28, width / 2, height / 2);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const px = x + 0.5 - width / 2;
-      const py = y + 0.5 - height / 2;
-      const qx = Math.abs(px) - (width / 2 - corner);
-      const qy = Math.abs(py) - (height / 2 - corner);
-      const outsideX = Math.max(qx, 0);
-      const outsideY = Math.max(qy, 0);
-      const outside = Math.hypot(outsideX, outsideY);
-      const depth = corner - outside - Math.min(Math.max(qx, qy), 0);
-      const slope = Math.pow(1 - Math.min(Math.max(depth / bevel, 0), 1), 2);
-      const nx = outside > 0 ? outsideX / outside : qx > qy ? 1 : 0;
-      const ny = outside > 0 ? outsideY / outside : qx > qy ? 0 : 1;
-      const offset = (y * width + x) * 4;
-      // A rounded-rectangle normal pulls the live backdrop inward along the bevel.
-      pixels.data[offset] = Math.round(127.5 - Math.sign(px) * nx * slope * 127.5);
-      pixels.data[offset + 1] = Math.round(127.5 - Math.sign(py) * ny * slope * 127.5);
-      pixels.data[offset + 2] = Math.round(255 * Math.min(Math.max(depth / bevel, 0), 1));
+  const pixels = context.createImageData(canvas.width, canvas.height);
+  const geometry = liquidGlassGeometry(width, height, radius);
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      const [dx, dy] = liquidGlassDisplacement((x + 0.5) / density, (y + 0.5) / density, geometry);
+      const offset = (y * canvas.width + x) * 4;
+      pixels.data[offset] = Math.round(128 + (dx / geometry.strength) * 127);
+      pixels.data[offset + 1] = Math.round(128 + (dy / geometry.strength) * 127);
+      pixels.data[offset + 2] = 128;
       pixels.data[offset + 3] = 255;
     }
   }
   context.putImageData(pixels, 0, 0);
   const map = canvas.toDataURL();
   const oldest = lensMaps.keys().next().value;
-  if (lensMaps.size >= 4 && oldest !== undefined) lensMaps.delete(oldest);
+  if (lensMaps.size >= 12 && oldest !== undefined) lensMaps.delete(oldest);
   lensMaps.set(key, map);
   return map;
 }
 
 /** Defines a backdrop lens for its parent; foreground text never enters the filter. */
-export function LiquidGlassLens({ radius = 22 }: { radius?: number }) {
+export function LiquidGlassLens({ radius = 22, blur = 1 }: { radius?: number; blur?: number }) {
   const { theme, resolvedTheme, themeHalves } = useTheme();
   const enabled = resolveThemeHalf(theme, themeHalves, resolvedTheme) === "liquid-glass";
   const id = `liquid-lens-${useId().replaceAll(":", "")}`;
   const svgRef = useRef<SVGSVGElement>(null);
-  const filterRef = useRef<SVGFilterElement>(null);
-  const imageRef = useRef<SVGFEImageElement>(null);
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Synchronizes the SVG displacement map with the actual DOM surface geometry.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Synchronizes decoded SVG displacement maps with DOM surface geometry.
   useEffect(() => {
-    const surface = svgRef.current?.parentElement;
-    const image = imageRef.current;
-    const filter = filterRef.current;
-    if (!enabled || !surface || !image || !filter) return;
+    const svg = svgRef.current;
+    const surface = svg?.parentElement;
+    if (!enabled || !surface || !svg) return;
+    const filters = Array.from(svg.querySelectorAll("filter"));
     let lastSize = "";
+    let revision = 0;
+    let active = 1;
+    let frame = 0;
+    let disposed = false;
+    let preparing = false;
+    let requested: { width: number; height: number; density: number } | undefined;
+    surface.style.setProperty("--liquid-glass-softness", `${blur}px`);
+
+    const prepare = () => {
+      if (disposed || preparing || !requested) return;
+      const request = requested;
+      const { width, height, density } = request;
+      revision += 1;
+      const currentRevision = revision;
+      const map = createLensMap(width, height, radius, density);
+      if (!map) return;
+      preparing = true;
+      const decoded = new Image();
+      decoded.src = map;
+      void decoded
+        .decode()
+        .then(() => {
+          if (disposed) return;
+          const next = 1 - active;
+          const filter = filters[next];
+          const image = filter?.querySelector("feImage");
+          const displacement = filter?.querySelector("feDisplacementMap");
+          if (!filter || !image || !displacement) return;
+          filter.setAttribute("width", String(width));
+          filter.setAttribute("height", String(height));
+          image.setAttribute("width", String(width));
+          image.setAttribute("height", String(height));
+          image.setAttribute("href", map);
+          displacement.setAttribute(
+            "scale",
+            String(liquidGlassGeometry(width, height, radius).strength * 2),
+          );
+          // Chromium caches filter rasters by id. Prepare the inactive bank before changing the reference.
+          filter.id = `${id}-${currentRevision}`;
+          cancelAnimationFrame(frame);
+          frame = requestAnimationFrame(() => {
+            frame = requestAnimationFrame(() => {
+              if (disposed) return;
+              surface.style.setProperty("--liquid-glass-refraction", `url("#${filter.id}")`);
+              active = next;
+              preparing = false;
+              // Coalesce rapid resizes without cancelling the lens already being prepared.
+              if (requested !== request) prepare();
+            });
+          });
+        })
+        .catch(() => {
+          // Keep the previous lens (or the CSS material) if decoding is unavailable.
+          preparing = false;
+          if (requested !== request) prepare();
+        });
+    };
     const resize = () => {
       const width = surface.offsetWidth;
       const height = surface.offsetHeight;
-      const size = `${width}:${height}`;
-      if (width === 0 || height === 0 || size === lastSize) return;
+      const density = Math.min(window.devicePixelRatio || 1, 2);
+      const size = `${width}:${height}:${density}`;
+      if (!width || !height || size === lastSize) return;
       lastSize = size;
-      const map = createLensMap(width, height, radius);
-      if (!map) return;
-      filter.setAttribute("width", String(width));
-      filter.setAttribute("height", String(height));
-      image.setAttribute("width", String(width));
-      image.setAttribute("height", String(height));
-      image.setAttribute("href", map);
-      // Chromium caches backdrop filters by id; resize must invalidate the old raster.
-      filter.id = `${id}-${width}-${height}`;
-      surface.style.setProperty("--liquid-glass-refraction", `url("#${filter.id}")`);
+      requested = { width, height, density };
+      prepare();
     };
     const stopObserving = observeResize(surface, resize);
     resize();
     return () => {
+      disposed = true;
       stopObserving();
+      cancelAnimationFrame(frame);
       surface.style.removeProperty("--liquid-glass-refraction");
+      surface.style.removeProperty("--liquid-glass-softness");
     };
-  }, [enabled, id, radius]);
+  }, [enabled, id, radius, blur]);
 
   if (!enabled) return null;
   return (
@@ -97,37 +137,33 @@ export function LiquidGlassLens({ radius = 22 }: { radius?: number }) {
       height="0"
       aria-hidden="true"
       focusable="false"
-      className="pointer-events-none absolute"
+      className="pointer-events-none absolute size-0"
     >
       <defs>
-        <filter
-          ref={filterRef}
-          id={id}
-          x="0"
-          y="0"
-          filterUnits="userSpaceOnUse"
-          primitiveUnits="userSpaceOnUse"
-          colorInterpolationFilters="sRGB"
-        >
-          <feImage ref={imageRef} x="0" y="0" preserveAspectRatio="none" result="lens" />
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="softened" />
-          <feColorMatrix
-            in="lens"
-            type="matrix"
-            values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 1 0 0"
-            result="core-mask"
-          />
-          <feComposite in="softened" in2="core-mask" operator="in" result="core" />
-          <feComposite in="SourceGraphic" in2="core-mask" operator="out" result="edge" />
-          <feComposite in="core" in2="edge" operator="arithmetic" k2="1" k3="1" result="material" />
-          <feDisplacementMap
-            in="material"
-            in2="lens"
-            scale="48"
-            xChannelSelector="R"
-            yChannelSelector="G"
-          />
-        </filter>
+        {[0, 1].map((bank) => (
+          <filter
+            key={bank}
+            x="0"
+            y="0"
+            filterUnits="userSpaceOnUse"
+            primitiveUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feImage x="0" y="0" preserveAspectRatio="none" result="encoded-lens" />
+            <feComponentTransfer in="encoded-lens" result="lens">
+              <feFuncR type="linear" slope="1" intercept={-0.5 / 255} />
+              <feFuncG type="linear" slope="1" intercept={-0.5 / 255} />
+            </feComponentTransfer>
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="lens"
+              xChannelSelector="R"
+              yChannelSelector="G"
+              result="refracted"
+            />
+            <feGaussianBlur in="refracted" stdDeviation={blur} />
+          </filter>
+        ))}
       </defs>
     </svg>
   );

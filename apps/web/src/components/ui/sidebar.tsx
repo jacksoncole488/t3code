@@ -7,6 +7,7 @@ import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import { Input, type InputProps } from "~/components/ui/input";
 import { MorphIcon } from "~/components/MorphIcon";
+import { LiquidGlassLens } from "~/components/LiquidGlassLens";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sheet,
@@ -382,6 +383,7 @@ function Sidebar({
             data-sidebar="sidebar"
             data-slot="sidebar-inner"
           >
+            <LiquidGlassLens radius={20} blur={2} />
             {children}
           </div>
         </div>

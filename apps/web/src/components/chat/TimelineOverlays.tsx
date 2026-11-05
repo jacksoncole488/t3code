@@ -1,6 +1,7 @@
 import { ChevronDownIcon, PaperclipIcon } from "lucide-react";
 
 import { Button } from "../ui/button";
+import { LiquidGlassLens } from "../LiquidGlassLens";
 
 export function WorkspaceFileDropOverlay() {
   return (
@@ -41,6 +42,7 @@ export function ScrollToEndButton(props: {
         size="xs"
         variant="glass"
       >
+        <LiquidGlassLens radius={9999} blur={0.7} />
         <ChevronDownIcon className="size-3.5" />
         Scroll to end
         {props.summary === null ? null : (
