@@ -1,10 +1,12 @@
 import type { ComponentProps } from "react";
 
+import { LiquidGlassLens } from "~/components/LiquidGlassLens";
 import { cn } from "~/lib/utils";
 
 function Shell({
   contextRow = false,
   className,
+  children,
   ...props
 }: ComponentProps<"div"> & { contextRow?: boolean }) {
   return (
@@ -27,14 +29,17 @@ function Shell({
         className,
       )}
       {...props}
-    />
+    >
+      <LiquidGlassLens />
+      {children}
+    </div>
   );
 }
 
 const outlineClasses =
   "after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-(--chat-composer-outline) dark:after:inset-shadow-2xs dark:after:inset-shadow-(color:--chat-composer-highlight)";
 
-function Host({ className, ...props }: ComponentProps<"div">) {
+function Host({ className, children, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="composer-host"
@@ -46,11 +51,14 @@ function Host({ className, ...props }: ComponentProps<"div">) {
         className,
       )}
       {...props}
-    />
+    >
+      <LiquidGlassLens />
+      {children}
+    </div>
   );
 }
 
-function Main({ className, ...props }: ComponentProps<"div">) {
+function Main({ className, children, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-chat-composer-main-surface="true"
@@ -65,7 +73,10 @@ function Main({ className, ...props }: ComponentProps<"div">) {
         className,
       )}
       {...props}
-    />
+    >
+      <LiquidGlassLens />
+      {children}
+    </div>
   );
 }
 

@@ -9,7 +9,10 @@ The design targets Apple's June 2025 WWDC reveal, especially
 [the AppKit session](https://developer.apple.com/videos/play/wwdc2025/310/).
 The navigation and composer use translucent material and illuminated edges;
 conversation text, code, and terminals keep stable backgrounds. Chromium/Electron
-adds an SVG backdrop displacement effect. Other browsers retain blur and tint.
+adds a rounded-rectangle backdrop lens to the composer, including its context-row
+and attached-banner layouts. Its displacement map follows the surface's actual
+dimensions, so the bevel keeps its shape when the composer expands or the window
+resizes. Other browsers retain blur and tint.
 This is an approximation, not Apple's native adaptive optical renderer: it does
 not sample wallpaper outside the window, dynamically invert labels based on
 background luminance, or reproduce native glass merging. Reduced transparency
