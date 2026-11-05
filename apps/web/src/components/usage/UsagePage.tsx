@@ -1,4 +1,5 @@
 import { ChatGptUsageButton } from "../settings/ChatGptUsageButton";
+import { LiquidGlassLens } from "../LiquidGlassLens";
 import { usesChatGptSharing } from "@t3tools/shared/usageLimits";
 import { RefreshIcon } from "~/components/ui/refresh-icon";
 import { useAtomValue } from "@effect/atom-react";
@@ -506,14 +507,17 @@ export function UsagePage() {
 
   return (
     <AppRouteModal label="Usage">
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="@container/usage-header flex min-h-12 shrink-0 items-center gap-1 border-b ps-5 pe-2">
-          {topbarContent}
-          <AppRouteModalClose />
-        </header>
-
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col" data-usage-page="true">
         <ScrollArea className="min-h-0 flex-1">
-          <WorkspacePageContainer width="wide">
+          <header
+            data-usage-toolbar="true"
+            className="@container/usage-header sticky top-0 z-10 flex min-h-12 shrink-0 items-center gap-1 border-b bg-background ps-5 pe-2"
+          >
+            <LiquidGlassLens radius={20} blur={2} />
+            {topbarContent}
+            <AppRouteModalClose />
+          </header>
+          <WorkspacePageContainer width="wide" className="relative isolate z-0">
             {selectedEnvironments.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {environments.length === 0

@@ -8,6 +8,7 @@ import { Button } from "~/components/ui/button";
 import { Input, type InputProps } from "~/components/ui/input";
 import { MorphIcon } from "~/components/MorphIcon";
 import { LiquidGlassLens } from "~/components/LiquidGlassLens";
+import { LiquidGlassSidebarLayout } from "~/components/LiquidGlassSidebarLayout";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sheet,
@@ -384,6 +385,7 @@ function Sidebar({
             data-slot="sidebar-inner"
           >
             <LiquidGlassLens radius={20} blur={2} />
+            <LiquidGlassSidebarLayout />
             {children}
           </div>
         </div>
@@ -629,7 +631,7 @@ function SidebarHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
+function SidebarFooter({ className, children, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
@@ -639,7 +641,10 @@ function SidebarFooter({ className, ...props }: React.ComponentProps<"div">) {
       data-sidebar="footer"
       data-slot="sidebar-footer"
       {...props}
-    />
+    >
+      <LiquidGlassLens radius={14} blur={2} />
+      {children}
+    </div>
   );
 }
 
@@ -652,8 +657,14 @@ function SidebarContent({
 }) {
   return (
     <>
-      {fixedHeader ? <div className="w-full shrink-0">{fixedHeader}</div> : null}
+      {fixedHeader ? (
+        <div className="relative w-full shrink-0" data-slot="sidebar-fixed-header">
+          <LiquidGlassLens radius={20} blur={2} />
+          {fixedHeader}
+        </div>
+      ) : null}
       <ScrollArea
+        data-slot="sidebar-scroll-area"
         hideScrollbars
         scrollFade
         scrollFadePadding={false}

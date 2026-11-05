@@ -4,6 +4,7 @@ import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
 import { cn } from "~/lib/utils";
+import { LiquidGlassSelection } from "~/components/LiquidGlassSelection";
 import { Toggle as ToggleComponent, type toggleVariants } from "~/components/ui/toggle";
 
 const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants>>({
@@ -44,7 +45,12 @@ function ToggleGroup({
       orientation={orientation}
       {...props}
     >
-      <ToggleGroupContext value={value}>{children}</ToggleGroupContext>
+      <ToggleGroupContext value={value}>
+        {variant === "segmented" ? (
+          <LiquidGlassSelection selector="[data-slot=toggle][data-pressed]" />
+        ) : null}
+        {children}
+      </ToggleGroupContext>
     </ToggleGroupPrimitive>
   );
 }

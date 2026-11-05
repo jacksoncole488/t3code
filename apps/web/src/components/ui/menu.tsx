@@ -3,6 +3,7 @@ import { CheckIcon, ChevronRightIcon, SearchIcon } from "lucide-react";
 import type * as React from "react";
 
 import { cn } from "~/lib/utils";
+import { LiquidGlassLens } from "~/components/LiquidGlassLens";
 import { buttonVariants } from "./button";
 import { renderClosingPositioner } from "./closing-positioner";
 import { Input, type InputProps } from "./input";
@@ -64,8 +65,10 @@ function MenuPopup({
             className,
           )}
           data-slot="menu-popup"
+          data-liquid-glass-surface="menu"
           {...props}
         >
+          <LiquidGlassLens radius={16} blur={2} />
           <div className="max-h-(--available-height) w-full overflow-y-auto p-1">{children}</div>
         </MenuPrimitive.Popup>
       </MenuPrimitive.Positioner>

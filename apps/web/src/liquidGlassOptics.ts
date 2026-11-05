@@ -1,13 +1,13 @@
 export function liquidGlassGeometry(width: number, height: number, radius: number) {
   const corner = Math.min(radius, width / 2, height / 2);
-  const bevel = Math.min(24, corner * 1.2, width / 2, height / 2);
+  const bevel = Math.min(28, corner * 1.3, width / 2, height / 2);
   return {
     width,
     height,
     radius: corner,
     bevel,
     // Keep the sampling gradient below one so strokes cannot fold over themselves.
-    strength: bevel * 0.26,
+    strength: bevel * 0.48,
   };
 }
 

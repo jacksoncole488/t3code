@@ -22,6 +22,7 @@ import {
   type RefObject,
 } from "react";
 import { ModelListRow } from "./ModelListRow";
+import { LiquidGlassSelection } from "../LiquidGlassSelection";
 import { ModelPickerSidebar } from "./ModelPickerSidebar";
 import { getProviderStatusMessage, hasProviderSetup } from "./ProviderStatusBanner";
 import {
@@ -303,7 +304,7 @@ function ModelPickerList({
         itemKeys.length > 0 ? "flex-1" : "h-0",
       )}
     >
-      <ComboboxListVirtualized>
+      <ComboboxListVirtualized className="relative z-[1]">
         <LegendList<string>
           ref={listRef}
           data={itemKeys}
@@ -326,6 +327,7 @@ function ModelPickerList({
           )}
         />
       </ComboboxListVirtualized>
+      <LiquidGlassSelection selector="[data-model-selected=true]" />
     </div>
   );
 }

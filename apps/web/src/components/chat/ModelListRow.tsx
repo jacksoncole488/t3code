@@ -42,6 +42,8 @@ export const ModelListRow = memo(function ModelListRow(props: {
 
   const row = (
     <ComboboxItem
+      data-model-selected={props.isSelected ? "true" : undefined}
+      data-glass-key={modelPickerModelKey(props.instanceId, props.slug)}
       hideIndicator
       selectedFill={false}
       index={props.index}

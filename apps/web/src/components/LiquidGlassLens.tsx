@@ -1,9 +1,8 @@
 import { useEffect, useId, useRef } from "react";
 
-import { useTheme } from "~/hooks/useTheme";
+import { useLiquidGlass } from "~/hooks/useLiquidGlass";
 import { observeResize } from "~/lib/observeResize";
 import { liquidGlassDisplacement, liquidGlassGeometry } from "~/liquidGlassOptics";
-import { resolveThemeHalf } from "~/themePalette";
 
 const lensMaps = new Map<string, string>();
 
@@ -19,14 +18,19 @@ function createLensMap(width: number, height: number, radius: number, density: n
 
   const pixels = context.createImageData(canvas.width, canvas.height);
   const geometry = liquidGlassGeometry(width, height, radius);
+  pixels.data.fill(128);
+  for (let alpha = 3; alpha < pixels.data.length; alpha += 4) pixels.data[alpha] = 255;
+  const inset = Math.ceil(Math.max(geometry.radius, geometry.bevel) * density);
   for (let y = 0; y < canvas.height; y++) {
     for (let x = 0; x < canvas.width; x++) {
+      // Large windows have a neutral center; only the perimeter needs optical sampling.
+      if (canvas.width > inset * 2 && y >= inset && y < canvas.height - inset && x === inset) {
+        x = canvas.width - inset;
+      }
       const [dx, dy] = liquidGlassDisplacement((x + 0.5) / density, (y + 0.5) / density, geometry);
       const offset = (y * canvas.width + x) * 4;
       pixels.data[offset] = Math.round(128 + (dx / geometry.strength) * 127);
       pixels.data[offset + 1] = Math.round(128 + (dy / geometry.strength) * 127);
-      pixels.data[offset + 2] = 128;
-      pixels.data[offset + 3] = 255;
     }
   }
   context.putImageData(pixels, 0, 0);
@@ -39,8 +43,7 @@ function createLensMap(width: number, height: number, radius: number, density: n
 
 /** Defines a backdrop lens for its parent; foreground text never enters the filter. */
 export function LiquidGlassLens({ radius = 22, blur = 1 }: { radius?: number; blur?: number }) {
-  const { theme, resolvedTheme, themeHalves } = useTheme();
-  const enabled = resolveThemeHalf(theme, themeHalves, resolvedTheme) === "liquid-glass";
+  const enabled = useLiquidGlass();
   const id = `liquid-lens-${useId().replaceAll(":", "")}`;
   const svgRef = useRef<SVGSVGElement>(null);
 

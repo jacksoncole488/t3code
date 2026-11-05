@@ -3,6 +3,7 @@ import { type ProviderInstanceId } from "@t3tools/contracts";
 import { memo, useLayoutEffect, useRef, useState } from "react";
 import { StarIcon } from "lucide-react";
 import { ProviderInstanceIcon } from "./ProviderInstanceIcon";
+import { LiquidGlassSelection } from "../LiquidGlassSelection";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "../ui/tooltip";
 import { cn } from "~/lib/utils";
 import {
@@ -84,6 +85,7 @@ export const ModelPickerSidebar = memo(function ModelPickerSidebar(props: {
     >
       <div className="h-full overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div ref={sidebarContentRef} className="relative flex min-h-full flex-col gap-1 p-1">
+          <LiquidGlassSelection selector="[data-model-picker-provider] button[aria-pressed=true]" />
           {selectedIndicatorTop !== null ? (
             <div
               data-model-picker-selected-indicator="true"
