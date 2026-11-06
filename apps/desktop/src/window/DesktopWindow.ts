@@ -1,4 +1,5 @@
 import * as Clock from "effect/Clock";
+import * as Config from "effect/Config";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
@@ -294,6 +295,9 @@ function bindFirstRevealTrigger(
 /** @public */
 export const make = Effect.gen(function* () {
   const environment = yield* DesktopEnvironment.DesktopEnvironment;
+  const useBuiltClient = yield* Config.Boolean("T3CODE_DESKTOP_USE_BUILT_CLIENT").pipe(
+    Config.withDefault(false),
+  );
   const desktopState = yield* DesktopState.DesktopState;
   const assets = yield* DesktopAssets.DesktopAssets;
   const electronMenu = yield* ElectronMenu.ElectronMenu;
@@ -855,7 +859,7 @@ export const make = Effect.gen(function* () {
     });
 
     loadApplication();
-    if (environment.isDevelopment) {
+    if (environment.isDevelopment && !useBuiltClient) {
       window.webContents.openDevTools({ mode: "detach" });
     }
 

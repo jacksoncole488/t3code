@@ -177,9 +177,13 @@ const bootstrap = Effect.gen(function* () {
 
   const settings = yield* desktopSettings.get;
   const electronProtocol = yield* ElectronProtocol.ElectronProtocol;
+  // A local fork can keep its isolated dev profile while launching without a Vite server.
+  const useBuiltClient = yield* Config.Boolean("T3CODE_DESKTOP_USE_BUILT_CLIENT").pipe(
+    Config.withDefault(false),
+  );
   yield* electronProtocol.registerDesktopProtocol({
     scheme: ElectronProtocol.getDesktopScheme(environment.isDevelopment),
-    ...(environment.isDevelopment
+    ...(environment.isDevelopment && !useBuiltClient
       ? { targetOrigin: Option.getOrThrow(environment.devServerUrl) }
       : { assetDirectory: environment.clientAssetsDir }),
     clerkFrontendApiHostname: DesktopClerk.desktopClerkFrontendApiHostname,

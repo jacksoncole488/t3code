@@ -109,6 +109,7 @@ function shellSingleQuote(value) {
 export function makeDevelopmentEnvironmentScript(environment) {
   const envEntries = [
     ["VITE_DEV_SERVER_URL", environment.VITE_DEV_SERVER_URL],
+    ["T3CODE_DESKTOP_USE_BUILT_CLIENT", environment.T3CODE_DESKTOP_USE_BUILT_CLIENT],
     ["T3CODE_PORT", environment.T3CODE_PORT],
     ["T3CODE_HOME", environment.T3CODE_HOME],
     ["T3CODE_COMMIT_HASH", environment.T3CODE_COMMIT_HASH],
@@ -135,6 +136,7 @@ export function makeDevelopmentLauncherScript({
 }) {
   return [
     "#!/bin/sh",
+    "unset ELECTRON_RUN_AS_NODE",
     `if [ -f ${shellSingleQuote(environmentFilePath)} ]; then . ${shellSingleQuote(environmentFilePath)}; fi`,
     `exec ${shellSingleQuote(electronBinaryPath)} --t3code-dev-root=${shellSingleQuote(desktopRoot)} ${shellSingleQuote(mainEntryPath)} "$@"`,
     "",

@@ -19,6 +19,7 @@ describe("electron development launcher", () => {
   it("uses captured values only as fallbacks for a live runner environment", () => {
     const environmentScript = makeDevelopmentEnvironmentScript({
       VITE_DEV_SERVER_URL: "http://127.0.0.1:8526",
+      T3CODE_DESKTOP_USE_BUILT_CLIENT: "true",
       T3CODE_PORT: "16566",
       T3CODE_HOME: "/tmp/t3",
       T3CODE_OTLP_PROTOCOL: "http/protobuf",
@@ -33,6 +34,10 @@ describe("electron development launcher", () => {
       "if [ -z \"${T3CODE_OTLP_PROTOCOL:-}\" ]; then export T3CODE_OTLP_PROTOCOL='http/protobuf'; fi",
     );
     assert.notInclude(environmentScript, "\nexport VITE_DEV_SERVER_URL=");
+    assert.include(
+      environmentScript,
+      "if [ -z \"${T3CODE_DESKTOP_USE_BUILT_CLIENT:-}\" ]; then export T3CODE_DESKTOP_USE_BUILT_CLIENT='true'; fi",
+    );
   });
 
   it("keeps the launcher script free of volatile environment values", () => {
@@ -48,6 +53,7 @@ describe("electron development launcher", () => {
       "if [ -f '/repo/apps/desktop/.electron-runtime/dev-environment.sh' ]; then . '/repo/apps/desktop/.electron-runtime/dev-environment.sh'; fi",
     );
     assert.notInclude(script, "VITE_DEV_SERVER_URL");
+    assert.include(script, "unset ELECTRON_RUN_AS_NODE");
     assert.include(
       script,
       "exec '/repo/node_modules/electron/Electron' --t3code-dev-root='/repo/apps/desktop' '/repo/apps/desktop/dist-electron/main.cjs' \"$@\"",

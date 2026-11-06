@@ -37,6 +37,27 @@ For the Electron development shell, use `vp run dev:desktop` with a separate
 home directory as described in [Development](development.md). Do not replace
 the installed signed app with an unverified custom build.
 
+### Reopen the Mac fork without a development server
+
+The development shell normally proxies its interface to Vite. Opening that app
+from Finder after Vite stops can leave an empty window. For daily use, build the
+interface and capture the built-client launch mode after configuring the isolated
+development shell above:
+
+```sh
+vp run build:desktop
+source apps/desktop/.electron-runtime/dev-environment.sh
+export T3CODE_DESKTOP_USE_BUILT_CLIENT=true
+node --input-type=module -e 'import { resolveDevProtocolClient } from "./apps/desktop/scripts/electron-launcher.mjs"; resolveDevProtocolClient();'
+```
+
+Quit and reopen `apps/desktop/.electron-runtime/T3 Code (Dev).app`. It loads the
+built interface from disk, starts its backend, and retains the development
+profile and isolated home directory. No Terminal window or Vite server needs to
+stay open. Rebuild after updating source. To return to live development, unset
+`T3CODE_DESKTOP_USE_BUILT_CLIENT` before running `vp run dev:desktop`; the runner
+refreshes the captured environment.
+
 ## Bring in official changes
 
 `origin` is your GitHub fork and `upstream` is `pingdotgg/t3code`. Your customized
